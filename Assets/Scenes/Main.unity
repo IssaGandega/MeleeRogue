@@ -269,7 +269,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7115d181db0763547b915ce6e8f23bb3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  playerStats: {fileID: 0}
+  playerSpeed: 7
+  dashDuration: 0.1
+  dashSpeed: 25
 --- !u!1 &1360853787
 GameObject:
   m_ObjectHideFlags: 0
