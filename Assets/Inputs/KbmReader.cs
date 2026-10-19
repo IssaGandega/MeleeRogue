@@ -1,15 +1,17 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class KBMReader : InputReader
+public class KbmReader : InputReader
 {
     private KeyboardInputActions actions;
+    private Camera _mainCamera;
 
     private void Awake()
     {
         // Created once. Not in OnEnable: OnEnable can run several times
         // if this object gets disabled and re-enabled later.
         actions = new KeyboardInputActions();
+        _mainCamera = Camera.main; // cached once: avoids a tag lookup every frame
     }
 
     private void OnEnable()
@@ -44,7 +46,7 @@ public class KBMReader : InputReader
     private Vector3 MouseWorldPosition()
     {
         Vector3 mousePos = Mouse.current.position.ReadValue();
-        mousePos.z = Camera.main.nearClipPlane;
-        return Camera.main.ScreenToWorldPoint(mousePos);
+        mousePos.z = _mainCamera.nearClipPlane;
+        return _mainCamera.ScreenToWorldPoint(mousePos);
     }
 }

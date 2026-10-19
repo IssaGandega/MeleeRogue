@@ -5,7 +5,9 @@ namespace Controller
     public class Cooldown
     {
         public float Duration { get; private set; }
-        private float _lastTrigger = 0;
+        
+        //Set to -infinity so no matter how big the cooldown, it can never be an issue on first trigger
+        private float _lastTrigger = -Mathf.Infinity;
 
         public Cooldown(float duration)
         {

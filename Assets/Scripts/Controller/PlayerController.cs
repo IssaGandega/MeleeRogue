@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
+using Weapons;
 
 namespace Controller
 {
+    [RequireComponent(typeof(InputReader))]
     public class PlayerController : MonoBehaviour
     {
         public enum PlayerState
@@ -28,9 +30,9 @@ namespace Controller
         private readonly InputBuffer _dashBuffer = new InputBuffer(.15f);
 
         [Header("Attack")] 
-        [SerializeField] private float attackDuration = 1f;
-
         [SerializeField] private float attackSpeedModifier = .5f;
+        [SerializeField] private Weapon currentWeapon;
+        
         private readonly Cooldown _attackCooldown = new Cooldown(2f);
         private readonly InputBuffer _attackBuffer = new InputBuffer(.15f);
         
@@ -38,6 +40,7 @@ namespace Controller
         private void Awake()
         {
             _inputReader = GetComponent<InputReader>();
+            
         }
 
         private void OnEnable()
@@ -98,7 +101,11 @@ namespace Controller
         private void LookAt()
         {
             if (State.Equals(PlayerState.Attacking)) return;
-            var angle = Vector2.SignedAngle(Vector2.up, (Vector2)(_inputReader.AimPosition-transform.position).normalized);
+
+            Vector2 toAim = (Vector2)(_inputReader.AimPosition - transform.position);
+            if (toAim.sqrMagnitude < 0.0001f) return; // cursor right on top of the player: no meaningful direction, keep current rotation
+
+            var angle = Vector2.SignedAngle(Vector2.up, toAim.normalized);
             transform.eulerAngles = new Vector3(0,0,Mathf.MoveTowardsAngle(transform.eulerAngles.z, angle, rotationSpeed * Time.deltaTime));
         }
 
@@ -134,7 +141,7 @@ namespace Controller
         private void TryConsumeAttackBuffer()
         {
             if (!_attackBuffer.HasFreshRequest() || State == PlayerState.Attacking || State == PlayerState.Dashing ||
-                !_attackCooldown.IsReady()) return;
+                !currentWeapon.GetCooldown().IsReady()) return;
 
             StartCoroutine(AttackCoroutine());
             return;
@@ -142,9 +149,9 @@ namespace Controller
             IEnumerator AttackCoroutine()
             {
                 State = PlayerState.Attacking;
-                yield return new WaitForSeconds(attackDuration);
+                yield return StartCoroutine(currentWeapon.Attack());;
                 _attackBuffer.Consume();
-                _attackCooldown.Trigger();
+                currentWeapon.GetCooldown().Trigger();
                 
                 //Verify to not go into idle if attack has been overwritten by a dash
                 if (State == PlayerState.Attacking)

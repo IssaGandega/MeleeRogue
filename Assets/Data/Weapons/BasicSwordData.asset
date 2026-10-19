@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 968036c168cc471e806a39b8b92b4457, type: 3}
+  m_Name: BasicSwordData
+  m_EditorClassIdentifier: Assembly-CSharp::Data.Weapons.SwordData
+  attackCooldown: 1
+  comboBuffer: 0.15
+  startAngle: -70
+  endAngle: 80
+  duration: 0.3
+  returnDuration: 0.1
+  lungeDirection: {x: -0.8, y: 1.2}
+  lungeDistance: 0.7
