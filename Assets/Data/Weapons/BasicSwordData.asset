@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968036c168cc471e806a39b8b92b4457, type: 3}
   m_Name: BasicSwordData
   m_EditorClassIdentifier: Assembly-CSharp::Data.Weapons.SwordData
-  attackCooldown: 1
+  attackCooldown: 0.5
   comboBuffer: 0.15
+  damage: 1
+  knockbackForce: 20
+  returnDuration: 0.2
   startAngle: -70
   endAngle: 80
-  duration: 0.3
-  returnDuration: 0.1
+  duration: 0.2
   lungeDirection: {x: -0.8, y: 1.2}
   lungeDistance: 0.7

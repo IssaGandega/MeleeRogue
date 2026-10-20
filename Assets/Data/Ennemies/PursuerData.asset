@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b26a2f7564aaa3a4bb9e149cf14e08c9, type: 3}
+  m_Name: PursuerData
+  m_EditorClassIdentifier: Assembly-CSharp::Enemies.PursuerData
+  maxHealth: 10
+  moveSpeed: 3
+  hyperArmor: 0
+  bodyContactDamage: 1
+  bodyContactKnockback: 10
+  contactDamage: 1
+  contactKnockback: 20
+  attackRange: 4
+  attackCooldown: 2
+  contactRange: 1
+  attackWindup: 0.7
+  lungeDuration: 0.4
+  attackRecovery: 0.3
+  staggerDuration: 1

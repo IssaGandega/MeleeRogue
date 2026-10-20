@@ -9,7 +9,7 @@ namespace Controller
 
         public InputBuffer(float bufferTime)
         {
-            this._bufferTime = bufferTime;
+            _bufferTime = bufferTime;
         }
     
         public void Request()

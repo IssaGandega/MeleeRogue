@@ -11,7 +11,7 @@ namespace Controller
 
         public Cooldown(float duration)
         {
-            this.Duration = duration;
+            Duration = duration;
         }
 
         public bool IsReady()
