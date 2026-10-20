@@ -15,7 +15,7 @@ namespace Controller
             Attacking
         }
 
-        public PlayerState State { get; private set; } = PlayerState.Idle;
+        public PlayerState State{ get; private set; } = PlayerState.Idle;
 
         private InputReader _inputReader;
 
@@ -33,6 +33,7 @@ namespace Controller
         [Header("Attack")] 
         [SerializeField] private float attackSpeedModifier = .5f;
         [SerializeField] private Weapon currentWeapon;
+        [SerializeField] private Transform weaponArm;
         
         private readonly Cooldown _attackCooldown = new Cooldown(2f);
         private readonly InputBuffer _attackBuffer = new InputBuffer(.15f);
@@ -43,10 +44,15 @@ namespace Controller
         [SerializeField] private float knockbackDecay = 10f;
         private KnockbackHandler _knockback;
 
+        private Animator _animator;
+        private string _currentFacing = "Down";
+        private string _currentAnimState;
+
         private void Awake()
         {
             _inputReader = GetComponent<InputReader>();
             _knockback = new KnockbackHandler(knockbackDecay);
+            _animator = GetComponent<Animator>();
         }
 
         public void ApplyKnockback(Vector2 knockback)
@@ -82,6 +88,7 @@ namespace Controller
             LookAt();
             TryConsumeDashBuffer();
             TryConsumeAttackBuffer();
+            UpdateFacing();
             transform.position += (Vector3)_knockback.Tick(Time.deltaTime);
         }
 
@@ -114,11 +121,64 @@ namespace Controller
         {
             if (State == PlayerState.Attacking) return;
 
-            Vector2 toAim = (Vector2)(_inputReader.AimPosition - transform.position);
+            Vector2 toAim = (Vector2)(_inputReader.AimPosition - weaponArm.position);
             if (toAim.sqrMagnitude < 0.0001f) return; // cursor right on top of the player: no meaningful direction, keep current rotation
 
-            var angle = Vector2.SignedAngle(Vector2.up, toAim.normalized);
-            transform.eulerAngles = new Vector3(0,0,Mathf.MoveTowardsAngle(transform.eulerAngles.z, angle, rotationSpeed * Time.deltaTime));
+            var angle = Vector2.SignedAngle(Vector2.down, toAim.normalized);
+            weaponArm.eulerAngles = new Vector3(0,0,Mathf.MoveTowardsAngle(weaponArm.eulerAngles.z, angle, rotationSpeed * Time.deltaTime));
+        }
+
+        // Angles use the same convention as Vector2.SignedAngle(Vector2.up, ...): 0 = up, positive = counter-clockwise
+        private static readonly (string Name, float Angle)[] FacingDirections =
+        {
+            ("Up", 0f),
+            ("Up_Right", -45f),
+            ("Down_Right", -135f),
+            ("Down", 180f),
+            ("Down_Left", 135f),
+            ("Up_Left", 45f),
+        };
+
+        private void UpdateFacing()
+        {
+            // Freeze facing during attack, matching the weapon aim freeze above
+            if (State != PlayerState.Attacking && State != PlayerState.Dashing)
+            {
+                _currentFacing = ClosestFacing(_inputReader.MoveDirection);
+            }
+
+            string motion = State == PlayerState.Dashing ? "Dash" : _inputReader.MoveDirection != Vector2.zero ? "Walk" : "Idle";
+            string state = $"Player_{motion}_{_currentFacing}";
+
+            if (state == _currentAnimState) return; // Play() restarts the clip, so only call it on an actual change
+            _currentAnimState = state;
+            _animator.Play(state);
+        }
+
+        private static string ClosestFacing(Vector2 direction)
+        {
+            if (direction == Vector2.zero) return "Down"; // no input: default to down
+            if (direction.y == 0f) return direction.x > 0f ? "Down_Right" : "Down_Left"; // no pure left/right sprite: fall back to down
+
+            return ClosestFacing(Vector2.SignedAngle(Vector2.up, direction));
+        }
+
+        private static string ClosestFacing(float angle)
+        {
+            string closest = FacingDirections[0].Name;
+            float smallestDiff = float.MaxValue;
+
+            foreach (var (name, candidate) in FacingDirections)
+            {
+                float diff = Mathf.Abs(Mathf.DeltaAngle(angle, candidate)); // DeltaAngle avoids the 0/360 wraparound
+                if (diff < smallestDiff)
+                {
+                    smallestDiff = diff;
+                    closest = name;
+                }
+            }
+
+            return closest;
         }
 
         private void TryConsumeDashBuffer()

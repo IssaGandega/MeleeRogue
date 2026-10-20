@@ -17,8 +17,8 @@ MonoBehaviour:
   damage: 1
   knockbackForce: 20
   returnDuration: 0.2
-  startAngle: -70
-  endAngle: 80
+  startAngle: -45
+  endAngle: 45
   duration: 0.2
-  lungeDirection: {x: -0.8, y: 1.2}
-  lungeDistance: 0.7
+  lungeDirection: {x: 0, y: 0}
+  lungeDistance: 0.5
