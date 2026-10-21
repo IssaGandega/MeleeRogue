@@ -12,12 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b26a2f7564aaa3a4bb9e149cf14e08c9, type: 3}
   m_Name: PursuerData
   m_EditorClassIdentifier: Assembly-CSharp::Enemies.PursuerData
-  maxHealth: 10
+  maxHealth: 100
   moveSpeed: 3
   hyperArmor: 0
   bodyContactDamage: 1
   bodyContactKnockback: 10
-  hitWeight: 1
+  hitWeight: 0.8
+  hitStopDuration: 0.4
   contactDamage: 1
   contactKnockback: 20
   attackRange: 6

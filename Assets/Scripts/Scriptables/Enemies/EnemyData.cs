@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Enemies
+namespace Scriptables.Enemies
 {
     public abstract class EnemyData : ScriptableObject
     {
@@ -14,6 +14,7 @@ namespace Enemies
         [SerializeField] private int bodyContactDamage;
         [SerializeField] private float bodyContactKnockback;
         [SerializeField] private float hitWeight;
+        [SerializeField] private float hitStopDuration;
 
         public int MaxHealth => maxHealth;
         public float MoveSpeed => moveSpeed;
@@ -21,5 +22,6 @@ namespace Enemies
         public int BodyContactDamage => bodyContactDamage;
         public float BodyContactKnockback => bodyContactKnockback;
         public float HitWeight => hitWeight;
+        public float HitStopDuration => hitStopDuration;
     }
 }

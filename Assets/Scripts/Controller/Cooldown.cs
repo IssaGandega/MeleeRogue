@@ -12,6 +12,7 @@ namespace Controller
         public Cooldown(float duration)
         {
             Duration = duration;
+
         }
 
         public bool IsReady()
@@ -24,9 +25,9 @@ namespace Controller
             _lastTrigger = Time.time;
         }
         
-        public void SetDuration(float duration)
-        {
-            Duration = duration;
-        }
+        // public void SetDuration(float duration)
+        // {
+        //     Duration = duration;
+        // }
     }
 }

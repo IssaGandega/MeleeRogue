@@ -25,18 +25,18 @@ namespace Controller
         [Header("PlayerStats")]
         [SerializeField] private float playerSpeed = 5f;
         [SerializeField] private float rotationSpeed = 800f;
-        
+
         [Header("Dash")]
         [SerializeField] private float dashDuration = .5f;
         [SerializeField] private float dashSpeed = 20f;
         private readonly Cooldown _dashCooldown = new Cooldown(1f);
         private readonly InputBuffer _dashBuffer = new InputBuffer(.15f);
 
-        [Header("Attack")] 
+        [Header("Attack")]
         [SerializeField] private float attackSpeedModifier = .5f;
         [SerializeField] private Weapon currentWeapon;
         [SerializeField] private Transform weaponArm;
-        
+
         private readonly Cooldown _attackCooldown = new Cooldown(2f);
         private readonly InputBuffer _attackBuffer = new InputBuffer(.15f);
 
@@ -46,6 +46,12 @@ namespace Controller
         [SerializeField] private float knockbackDecay = 10f;
         private KnockbackHandler _knockback;
 
+        [Header("Squash & Stretch")]
+        [SerializeField] private Transform visualTransform;
+        [SerializeField] private float scaleRecoverySpeed = 12f;
+        [SerializeField] private float dashStretchIntensity = 0.3f;
+        private SquashStretch _squashStretch;
+
         private Animator _animator;
         private string _currentFacing = "Down";
         private string _currentAnimState;
@@ -54,12 +60,18 @@ namespace Controller
         {
             _inputReader = GetComponent<InputReader>();
             _knockback = new KnockbackHandler(knockbackDecay);
-            _animator = GetComponent<Animator>();
+            _animator = GetComponentInChildren<Animator>();
+            _squashStretch = new SquashStretch(visualTransform, scaleRecoverySpeed);
         }
 
         public void ApplyKnockback(Vector2 knockback)
         {
             _knockback.Apply(knockback);
+        }
+
+        public void Squash(Vector2 axis, float intensity)
+        {
+            _squashStretch.Squash(axis, intensity);
         }
 
         private void OnEnable()
@@ -92,6 +104,7 @@ namespace Controller
             TryConsumeAttackBuffer();
             UpdateFacing();
             transform.position += (Vector3)_knockback.Tick(Time.deltaTime);
+            _squashStretch.Tick(Time.deltaTime);
         }
 
         private void Move()
@@ -112,8 +125,8 @@ namespace Controller
                     speed = playerSpeed;
                     break;
             }
-                
-            
+
+
             if (_inputReader.MoveDirection != Vector2.zero)
             {
                 transform.position += (Vector3)(_inputReader.MoveDirection * (speed * Time.deltaTime));
@@ -149,7 +162,7 @@ namespace Controller
             {
                 _currentFacing = ClosestFacing(_inputReader.MoveDirection);
             }
-            
+
             //Add Attack State
             string motion = State == PlayerState.Dashing ? "Dash" : _inputReader.MoveDirection != Vector2.zero ? "Walk" : "Idle";
             string state = $"Player_{motion}_{_currentFacing}";
@@ -201,7 +214,8 @@ namespace Controller
                 State = PlayerState.Dashing;
                 var dashStartTime = Time.time;
                 Vector3 dashDirection = _inputReader.MoveDirection;
-                    
+                _squashStretch.Stretch(dashDirection, dashStretchIntensity);
+
                 while (dashStartTime + dashDuration > Time.time)
                 {
                     transform.position += (Vector3)(dashDirection * (dashSpeed * Time.deltaTime));
@@ -209,7 +223,7 @@ namespace Controller
                 }
                 _dashBuffer.Consume();
                 _dashCooldown.Trigger();
-                
+
                 //Same as attack if I want to cancel dash someday
                 if (State == PlayerState.Dashing)
                     State = PlayerState.Idle;
@@ -230,7 +244,7 @@ namespace Controller
                 FinishAttack();
             }
         }
-        
+
         private void FinishAttack()
         {
             _activeAttackCoroutine = null;

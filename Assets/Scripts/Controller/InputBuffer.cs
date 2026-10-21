@@ -14,7 +14,7 @@ namespace Controller
     
         public void Request()
         {
-            _requestTime = Time.time;
+          _requestTime = Time.time;
         }
     
         public bool HasFreshRequest()

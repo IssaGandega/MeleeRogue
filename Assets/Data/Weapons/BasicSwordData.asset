@@ -16,7 +16,7 @@ MonoBehaviour:
   comboBuffer: 0.15
   damage: 1
   knockbackForce: 20
-  hitWeight: 1
+  hitWeight: 0.3
   returnDuration: 0.2
   startAngle: -45
   endAngle: 45

@@ -1,6 +1,7 @@
+using Enemies;
 using UnityEngine;
 
-namespace Enemies
+namespace Scriptables.Enemies
 {
     [CreateAssetMenu(fileName = "PursuerData", menuName = "Scriptable Objects/Enemies/PursuerData")]
     public class PursuerData : EnemyData

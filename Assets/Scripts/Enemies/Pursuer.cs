@@ -2,6 +2,7 @@ using System.Collections;
 using Controller;
 using Interfaces;
 using Managers;
+using Scriptables.Enemies;
 using UnityEngine;
 
 namespace Enemies
@@ -13,14 +14,20 @@ namespace Enemies
         private Cooldown _attackCooldown;
 
         private Coroutine _attackSequence;
+        private Animator _animator;
+        private bool _isMoving;
+        private string _currentAnimState;
 
         private static readonly Color StaggerColor = new Color(0.54f, 0.17f, 0.89f);
+
+        [SerializeField] private float lungeStretchIntensity = 0.3f;
 
         protected override void Awake()
         {
             base.Awake();
             _data = (PursuerData)Data;
             _attackCooldown = new Cooldown(_data.AttackCooldown);
+            _animator = GetComponentInChildren<Animator>();
         }
 
         private void Start()
@@ -28,12 +35,32 @@ namespace Enemies
             _player = GameManager.Instance.Player;
         }
 
+        // Appelé depuis Enemy.Update() -- ne PAS redéfinir Update() ici, voir le commentaire sur OnUpdate().
+        protected override void OnUpdate()
+        {
+            if (_player == null) return;
+
+            BodyRenderer.flipX = _player.transform.position.x < transform.position.x;
+
+            string state = _isMoving ? "Pursuer_Walk" : "Pursuer_Idle";
+            if (state != _currentAnimState)
+            {
+                _currentAnimState = state;
+                _animator.Play(state);
+            }
+        }
+
         protected override void Move()
         {
-            if (_player == null || State == EnemyState.Attacking) return;
+            if (_player == null || State == EnemyState.Attacking)
+            {
+                _isMoving = false;
+                return;
+            }
 
             Vector3 direction = (_player.transform.position - transform.position).normalized;
             transform.position += direction * (_data.MoveSpeed * Time.deltaTime);
+            _isMoving = direction.sqrMagnitude > 0.0001f;
         }
 
         protected override void Attack()
@@ -63,7 +90,8 @@ namespace Enemies
 
         private IEnumerator StaggerRecovery()
         {
-            yield return FlashColor(StaggerColor, _data.StaggerDuration);
+            FlashFx.Flash(StaggerColor, _data.StaggerDuration);
+            yield return new WaitForSecondsRealtime(_data.StaggerDuration);
             _attackCooldown.Trigger();
             State = EnemyState.Idle;
         }
@@ -71,7 +99,7 @@ namespace Enemies
         private IEnumerator AttackSequence()
         {
             State = EnemyState.Attacking;
-            StartCoroutine(FlashColor(Color.yellow, _data.AttackWindup));
+            FlashFx.Flash(Color.red, _data.AttackWindup);
 
             // Telegraph: vibrate on the spot, committing to nothing yet.
             Vector3 startPos = transform.position;
@@ -79,6 +107,7 @@ namespace Enemies
 
             Vector3 direction = (_player.transform.position - startPos).normalized;
             Vector3 lungeTarget = startPos + direction * _data.AttackRange;
+            SquashFx.Stretch(direction, lungeStretchIntensity);
 
             float elapsed = 0f;
             bool contactMade = false;
@@ -87,7 +116,7 @@ namespace Enemies
                 elapsed += Time.deltaTime;
                 transform.position = Vector3.Lerp(startPos, lungeTarget, elapsed / _data.LungeDuration);
 
-                Vector2 pushDirection = ((Vector2)_player.transform.position - (Vector2)startPos).normalized;
+                Vector2 pushDirection = ((Vector2)_player.transform.position - (Vector2)transform.position).normalized;
                 if (Vector3.Distance(transform.position, _player.transform.position) <= _data.ContactRange && _player.State != PlayerController.PlayerState.Dashing)
                 {
                     _player.GetComponent<IDamageable>()?.TakeDamage(_data.ContactDamage, pushDirection * _data.ContactKnockback, _data.HitWeight);

@@ -1,27 +1,36 @@
-using System;
 using Controller;
 using Scriptables.Events;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Managers
 {
     public class CameraManager : MonoBehaviour
     {
-        
         [SerializeField] private Vector3 offset = new Vector3(0, 2, -10);
         [SerializeField] private float smoothTime = 0.25f;
-        [SerializeField] private HitEventChannel hitEventChannel;
-        private readonly CameraShake _shake =  new CameraShake();
-        
+
+        [SerializeField] private float recoverySpeed;
+        [SerializeField] private float frequency;
+        [SerializeField] private Vector2 maximumTranslationShake;
+
+        private HitEventChannel _hitEventChannel;
+        private CameraShake _shake;
+
+        private void Awake()
+        {
+            _hitEventChannel = GameManager.Instance.HitEventChannel;
+            _shake = new CameraShake(frequency, maximumTranslationShake, recoverySpeed);
+            _shake.Awake();
+        }
+
         private void OnEnable()
         {
-            hitEventChannel.OnRaised += OnHandleHit;
+            _hitEventChannel.OnRaised += OnHandleHit;
         }
 
         private void OnDisable()
         {
-            hitEventChannel.OnRaised -= OnHandleHit;
+            _hitEventChannel.OnRaised -= OnHandleHit;
         }
 
         private void OnHandleHit(HitInfo hitInfo)
@@ -39,12 +48,18 @@ namespace Managers
 
         private void LateUpdate()
         {
-            transform.position = Vector3.SmoothDamp(
-                transform.position, 
-                _player.transform.position + offset, 
-                ref _currentVelocity, 
+            transform.position = PlayerFollow() + _shake.Shake();
+            _shake.Tick(Time.unscaledDeltaTime);
+        }
+
+        private Vector3 PlayerFollow()
+        {
+            return Vector3.SmoothDamp(
+                transform.position,
+                _player.transform.position + offset,
+                ref _currentVelocity,
                 smoothTime
-            );
+                );
         }
     }
 }

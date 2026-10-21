@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Scriptables.Events;
 using UnityEngine;
@@ -7,18 +6,22 @@ namespace Managers
 {
     public class HitStop : MonoBehaviour
     {
-        
-        [SerializeField] private HitEventChannel hitEventChannel;
+        private HitEventChannel _hitEventChannel;
         private Coroutine _activeFreeze;
-        
+
+        private void Awake()
+        {
+            _hitEventChannel = GameManager.Instance.HitEventChannel;
+        }
+
         private void OnEnable()
         {
-            hitEventChannel.OnRaised += OnHandleHit;
+            _hitEventChannel.OnRaised += OnHandleHit;
         }
 
         private void OnDisable()
         {
-            hitEventChannel.OnRaised -= OnHandleHit;
+            _hitEventChannel.OnRaised -= OnHandleHit;
         }
 
         private void OnHandleHit(HitInfo hitInfo)
@@ -26,7 +29,7 @@ namespace Managers
             if (_activeFreeze != null)
                 StopCoroutine(_activeFreeze);
             _activeFreeze = StartCoroutine(StopTimer());
-            
+
             IEnumerator StopTimer()
             {
                 var duration = hitInfo.Magnitude * hitInfo.HitStopDuration;

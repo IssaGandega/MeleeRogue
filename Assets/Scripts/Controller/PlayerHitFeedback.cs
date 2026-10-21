@@ -1,46 +1,44 @@
-using System.Collections;
 using Interfaces;
 using Managers;
 using Scriptables.Events;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Controller
 {
-    // Test-only feedback so enemy attacks have something visible to confirm against
-    [RequireComponent(typeof(SpriteRenderer))]
     public class PlayerHitFeedback : MonoBehaviour, IDamageable
     {
         private SpriteRenderer _spriteRenderer;
-        private Color _defaultColor;
         private PlayerController _playerController;
-        
-        [SerializeField] private float hitStopDuration;
-        [SerializeField] private HitEventChannel hitEventChannel;
+        private HitFlash _hitFlash;
+        private HitEventChannel _hitEventChannel;
 
+        [SerializeField] private float hitStopDuration;
+        [SerializeField] private Color hitColor = Color.white;
+        [SerializeField] private float flashDuration = 0.12f;
+        [SerializeField] private float squashIntensity = 0.3f;
 
         private void Awake()
         {
-            _spriteRenderer = GetComponent<SpriteRenderer>();
-            _defaultColor = _spriteRenderer.color;
+            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
             _playerController = GetComponent<PlayerController>();
+            _hitFlash = new HitFlash(this, _spriteRenderer);
+            _hitEventChannel = GameManager.Instance.HitEventChannel;
         }
 
         public void TakeDamage(int damage, Vector2 knockback, float weight)
         {
-            if (_playerController.State == PlayerController.PlayerState.Dashing ) return;
+            if (_playerController.State == PlayerController.PlayerState.Dashing) return;
 
-            var hit = new HitInfo(weight,hitStopDuration, (Vector2)transform.position, this);
-            hitEventChannel.Raise(hit);
-            _playerController.ApplyKnockback(knockback);
-            StartCoroutine(FlashRed());
-        }
+            var hit = new HitInfo(weight, hitStopDuration, (Vector2)transform.position, this);
+            _hitEventChannel.Raise(hit);
 
-        private IEnumerator FlashRed()
-        {
-            _spriteRenderer.color = Color.red;
-            yield return new WaitForSeconds(0.5f);
-            _spriteRenderer.color = _defaultColor;
+            if (knockback != Vector2.zero)
+                _playerController.ApplyKnockback(knockback);
+
+            _hitFlash.Flash(hitColor, flashDuration);
+
+            if (knockback != Vector2.zero)
+                _playerController.Squash(knockback, squashIntensity);
         }
     }
 }
