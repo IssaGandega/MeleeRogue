@@ -1,52 +1,55 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class KbmReader : InputReader
+namespace Inputs
 {
-    private KeyboardInputActions actions;
-    private Camera _mainCamera;
-
-    private void Awake()
+    public class KbmReader : InputReader
     {
-        // Created once. Not in OnEnable: OnEnable can run several times
-        // if this object gets disabled and re-enabled later.
-        actions = new KeyboardInputActions();
-        _mainCamera = Camera.main; // cached once: avoids a tag lookup every frame
-    }
+        private KeyboardInputActions actions;
+        private Camera _mainCamera;
 
-    private void OnEnable()
-    {
-        actions.Player.Enable(); // without this, no callback ever fires
-        actions.Player.Attack.performed += HandleAttack;
-        actions.Player.Dash.performed += HandleDash;
-    }
+        private void Awake()
+        {
+            // Created once. Not in OnEnable: OnEnable can run several times
+            // if this object gets disabled and re-enabled later.
+            actions = new KeyboardInputActions();
+            _mainCamera = Camera.main; // cached once: avoids a tag lookup every frame
+        }
 
-    private void OnDisable()
-    {
-        actions.Player.Attack.performed -= HandleAttack;
-        actions.Player.Dash.performed -= HandleDash;
-        actions.Player.Disable();
-    }
+        private void OnEnable()
+        {
+            actions.Player.Enable(); // without this, no callback ever fires
+            actions.Player.Attack.performed += HandleAttack;
+            actions.Player.Dash.performed += HandleDash;
+        }
 
-    private void OnDestroy()
-    {
-        actions.Dispose(); // releases native resources held by the generated class
-    }
+        private void OnDisable()
+        {
+            actions.Player.Attack.performed -= HandleAttack;
+            actions.Player.Dash.performed -= HandleDash;
+            actions.Player.Disable();
+        }
 
-    private void Update()
-    {
-        // Continuous values: read every frame, not driven by events.
-        SetMoveDirection(actions.Player.Move.ReadValue<Vector2>());
-        SetAimPosition(MouseWorldPosition());
-    }
+        private void OnDestroy()
+        {
+            actions.Dispose(); // releases native resources held by the generated class
+        }
 
-    private void HandleAttack(InputAction.CallbackContext ctx) => RaiseAttackRequested();
-    private void HandleDash(InputAction.CallbackContext ctx) => RaiseDashRequested();
+        private void Update()
+        {
+            // Continuous values: read every frame, not driven by events.
+            SetMoveDirection(actions.Player.Move.ReadValue<Vector2>());
+            SetAimPosition(MouseWorldPosition());
+        }
 
-    private Vector3 MouseWorldPosition()
-    {
-        Vector3 mousePos = Mouse.current.position.ReadValue();
-        mousePos.z = _mainCamera.nearClipPlane;
-        return _mainCamera.ScreenToWorldPoint(mousePos);
+        private void HandleAttack(InputAction.CallbackContext ctx) => RaiseAttackRequested();
+        private void HandleDash(InputAction.CallbackContext ctx) => RaiseDashRequested();
+
+        private Vector3 MouseWorldPosition()
+        {
+            Vector3 mousePos = Mouse.current.position.ReadValue();
+            mousePos.z = _mainCamera.nearClipPlane;
+            return _mainCamera.ScreenToWorldPoint(mousePos);
+        }
     }
 }

@@ -1,6 +1,9 @@
 using System.Collections;
 using Interfaces;
+using Managers;
+using Scriptables.Events;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Controller
 {
@@ -11,6 +14,10 @@ namespace Controller
         private SpriteRenderer _spriteRenderer;
         private Color _defaultColor;
         private PlayerController _playerController;
+        
+        [SerializeField] private float hitStopDuration;
+        [SerializeField] private HitEventChannel hitEventChannel;
+
 
         private void Awake()
         {
@@ -19,8 +26,12 @@ namespace Controller
             _playerController = GetComponent<PlayerController>();
         }
 
-        public void TakeDamage(int damage, Vector2 knockback)
+        public void TakeDamage(int damage, Vector2 knockback, float weight)
         {
+            if (_playerController.State == PlayerController.PlayerState.Dashing ) return;
+
+            var hit = new HitInfo(weight,hitStopDuration, (Vector2)transform.position, this);
+            hitEventChannel.Raise(hit);
             _playerController.ApplyKnockback(knockback);
             StartCoroutine(FlashRed());
         }

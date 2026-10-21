@@ -4,6 +4,6 @@ namespace Interfaces
 {
     public interface IDamageable
     {
-        void TakeDamage(int damage, Vector2 knockback);
+        void TakeDamage(int damage, Vector2 knockback, float weight);
     }
 }

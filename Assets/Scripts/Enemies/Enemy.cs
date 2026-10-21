@@ -1,6 +1,8 @@
 using System.Collections;
 using Controller;
 using Interfaces;
+using Managers;
+using Scriptables.Events;
 using UnityEngine;
 
 namespace Enemies
@@ -19,6 +21,8 @@ namespace Enemies
         protected EnemyData Data => data;
 
         [SerializeField] private float knockbackDecay = 10f;
+        [SerializeField] private float hitStopDuration;
+        [SerializeField] private HitEventChannel hitEventChannel;
 
         public EnemyState State { get; protected set; } = EnemyState.Idle;
 
@@ -45,7 +49,7 @@ namespace Enemies
         protected abstract void Move();
         protected abstract void Attack();
 
-        public void TakeDamage(int damage, Vector2 knockback)
+        public void TakeDamage(int damage, Vector2 knockback, float weight)
         {
             _currentHealth -= damage;
             _knockback.Apply(knockback);
@@ -56,7 +60,8 @@ namespace Enemies
                 bool staggered = !data.HyperArmor && OnStagger();
                 if (!staggered)
                     StartCoroutine(FlashColor(Color.red, 0.15f));
-
+                var hit = new HitInfo(weight,hitStopDuration, (Vector2)transform.position, this);
+                hitEventChannel.Raise(hit);
                 OnDamaged();
             }
 
@@ -69,10 +74,10 @@ namespace Enemies
         {
             var player = collision.GetComponent<PlayerController>();
             if (player == null) return;
-
+            if (player.State == PlayerController.PlayerState.Dashing) return;
             Vector2 pushDirection = ((Vector2)transform.position - (Vector2)player.transform.position).normalized;
-            TakeDamage(0, pushDirection * data.BodyContactKnockback);
-            player.GetComponent<IDamageable>()?.TakeDamage(data.BodyContactDamage, -pushDirection * data.BodyContactKnockback);
+            TakeDamage(0, pushDirection * data.BodyContactKnockback, 0f);
+            player.GetComponent<IDamageable>()?.TakeDamage(data.BodyContactDamage, -pushDirection * data.BodyContactKnockback, 0f);
         }
 
         // Optional hook for a child to react to being hit

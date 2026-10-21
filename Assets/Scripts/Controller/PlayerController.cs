@@ -1,4 +1,7 @@
+using System;
 using System.Collections;
+using Inputs;
+using Managers;
 using UnityEngine;
 using Weapons;
 
@@ -26,7 +29,6 @@ namespace Controller
         [Header("Dash")]
         [SerializeField] private float dashDuration = .5f;
         [SerializeField] private float dashSpeed = 20f;
-        [SerializeField] private float dashSpeedModifier = .1f;
         private readonly Cooldown _dashCooldown = new Cooldown(1f);
         private readonly InputBuffer _dashBuffer = new InputBuffer(.15f);
 
@@ -101,8 +103,8 @@ namespace Controller
                     speed = playerSpeed;
                     break;
                 case PlayerState.Dashing:
-                    speed = playerSpeed * dashSpeedModifier;
-                    break;
+                    //speed = playerSpeed * dashSpeedModifier; DashControl
+                    return;
                 case PlayerState.Attacking:
                     speed = playerSpeed * attackSpeedModifier;
                     break;
@@ -111,6 +113,7 @@ namespace Controller
                     break;
             }
                 
+            
             if (_inputReader.MoveDirection != Vector2.zero)
             {
                 transform.position += (Vector3)(_inputReader.MoveDirection * (speed * Time.deltaTime));
@@ -146,7 +149,8 @@ namespace Controller
             {
                 _currentFacing = ClosestFacing(_inputReader.MoveDirection);
             }
-
+            
+            //Add Attack State
             string motion = State == PlayerState.Dashing ? "Dash" : _inputReader.MoveDirection != Vector2.zero ? "Walk" : "Idle";
             string state = $"Player_{motion}_{_currentFacing}";
 

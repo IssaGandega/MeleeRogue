@@ -87,9 +87,10 @@ namespace Enemies
                 elapsed += Time.deltaTime;
                 transform.position = Vector3.Lerp(startPos, lungeTarget, elapsed / _data.LungeDuration);
 
-                if (Vector3.Distance(transform.position, _player.transform.position) <= _data.ContactRange)
+                Vector2 pushDirection = ((Vector2)_player.transform.position - (Vector2)startPos).normalized;
+                if (Vector3.Distance(transform.position, _player.transform.position) <= _data.ContactRange && _player.State != PlayerController.PlayerState.Dashing)
                 {
-                    _player.GetComponent<IDamageable>()?.TakeDamage(_data.ContactDamage, Vector2.zero);
+                    _player.GetComponent<IDamageable>()?.TakeDamage(_data.ContactDamage, pushDirection * _data.ContactKnockback, _data.HitWeight);
                     contactMade = true;
                     break;
                 }

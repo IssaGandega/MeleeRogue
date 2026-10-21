@@ -17,6 +17,7 @@ MonoBehaviour:
   hyperArmor: 0
   bodyContactDamage: 1
   bodyContactKnockback: 10
+  hitWeight: 1
   contactDamage: 1
   contactKnockback: 20
   attackRange: 6

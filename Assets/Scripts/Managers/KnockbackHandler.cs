@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Controller
+namespace Managers
 {
     // Shared velocity + decay, used by both Enemy and PlayerController
     public class KnockbackHandler
@@ -24,7 +24,7 @@ namespace Controller
             if (_velocity == Vector2.zero) return Vector2.zero;
 
             Vector2 displacement = _velocity * deltaTime;
-            _velocity = Vector2.Lerp(_velocity, Vector2.zero, _decay * deltaTime);
+            _velocity = Vector2.Lerp(_velocity, Vector2.zero, 1 - Mathf.Exp(-_decay * deltaTime));
             return displacement;
         }
     }

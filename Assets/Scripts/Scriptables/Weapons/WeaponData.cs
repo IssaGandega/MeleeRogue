@@ -9,13 +9,14 @@ namespace Data.Weapons
         [SerializeField] private float comboBuffer; // TODO(combo): unused until the combo system exists.
         [SerializeField] private int damage;
         [SerializeField] private float knockbackForce;
-
+        [SerializeField] private float hitWeight;
         [SerializeField] private float returnDuration;
 
         public float AttackCooldown => attackCooldown;
         public float ComboBuffer => comboBuffer;
         public int Damage => damage;
         public float KnockbackForce => knockbackForce;
+        public float HitWeight => hitWeight;
 
         public IEnumerator PlayHit(int index, Transform weaponTransform, Transform handTransform, Collider2D hitbox)
         {

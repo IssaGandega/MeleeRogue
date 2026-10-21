@@ -75,7 +75,7 @@ namespace Weapons
                 // Away from the weapon's position, not the player's - ties knockback direction to the swing angle.
                 Vector2 knockback = (Vector2)(collision.transform.position - transform.position).normalized
                                      * weaponData.KnockbackForce;
-                collision.gameObject.GetComponent<IDamageable>()?.TakeDamage(weaponData.Damage, knockback);
+                collision.gameObject.GetComponent<IDamageable>()?.TakeDamage(weaponData.Damage, knockback, weaponData.HitWeight);
             }
         }
         
