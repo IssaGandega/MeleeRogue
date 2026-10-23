@@ -3,10 +3,7 @@ using UnityEngine;
 
 namespace Managers
 {
-    // Flash de sprite partagé, possédé par le script qui en a besoin.
-    // Même principe que KnockbackHandler/CameraShake : une classe simple qui
-    // lance sa coroutine sur le MonoBehaviour qu'on lui donne, au lieu de
-    // dupliquer la même logique dans chaque script.
+
     public class HitFlash
     {
         private readonly MonoBehaviour _owner;

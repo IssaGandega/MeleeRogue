@@ -1,7 +1,6 @@
 using System.Collections;
 using Controller;
 using Interfaces;
-using Managers;
 using Scriptables.Enemies;
 using UnityEngine;
 
@@ -10,7 +9,6 @@ namespace Enemies
     public class Pursuer : Enemy
     {
         private PursuerData _data;
-        private PlayerController _player;
         private Cooldown _attackCooldown;
 
         private Coroutine _attackSequence;
@@ -30,18 +28,8 @@ namespace Enemies
             _animator = GetComponentInChildren<Animator>();
         }
 
-        private void Start()
-        {
-            _player = GameManager.Instance.Player;
-        }
-
-        // Appelé depuis Enemy.Update() -- ne PAS redéfinir Update() ici, voir le commentaire sur OnUpdate().
         protected override void OnUpdate()
         {
-            if (_player == null) return;
-
-            BodyRenderer.flipX = _player.transform.position.x < transform.position.x;
-
             string state = _isMoving ? "Pursuer_Walk" : "Pursuer_Idle";
             if (state != _currentAnimState)
             {
@@ -52,22 +40,22 @@ namespace Enemies
 
         protected override void Move()
         {
-            if (_player == null || State == EnemyState.Attacking)
+            if (Player == null || State == EnemyState.Attacking)
             {
                 _isMoving = false;
                 return;
             }
 
-            Vector3 direction = (_player.transform.position - transform.position).normalized;
+            Vector3 direction = (Player.transform.position - transform.position).normalized;
             transform.position += direction * (_data.MoveSpeed * Time.deltaTime);
             _isMoving = direction.sqrMagnitude > 0.0001f;
         }
 
         protected override void Attack()
         {
-            if (_player == null || State == EnemyState.Attacking || !_attackCooldown.IsReady()) return;
+            if (Player == null || State == EnemyState.Attacking || !_attackCooldown.IsReady()) return;
 
-            float distance = Vector3.Distance(transform.position, _player.transform.position);
+            float distance = Vector3.Distance(transform.position, Player.transform.position);
             if (distance > _data.AttackRange) return;
 
             _attackSequence = StartCoroutine(AttackSequence());
@@ -105,7 +93,7 @@ namespace Enemies
             Vector3 startPos = transform.position;
             yield return Vibrate(startPos, _data.AttackWindup);
 
-            Vector3 direction = (_player.transform.position - startPos).normalized;
+            Vector3 direction = (Player.transform.position - startPos).normalized;
             Vector3 lungeTarget = startPos + direction * _data.AttackRange;
             SquashFx.Stretch(direction, lungeStretchIntensity);
 
@@ -116,10 +104,10 @@ namespace Enemies
                 elapsed += Time.deltaTime;
                 transform.position = Vector3.Lerp(startPos, lungeTarget, elapsed / _data.LungeDuration);
 
-                Vector2 pushDirection = ((Vector2)_player.transform.position - (Vector2)transform.position).normalized;
-                if (Vector3.Distance(transform.position, _player.transform.position) <= _data.ContactRange && _player.State != PlayerController.PlayerState.Dashing)
+                Vector2 pushDirection = ((Vector2)Player.transform.position - (Vector2)transform.position).normalized;
+                if (Vector3.Distance(transform.position, Player.transform.position) <= _data.ContactRange && Player.State != PlayerController.PlayerState.Dashing)
                 {
-                    _player.GetComponent<IDamageable>()?.TakeDamage(_data.ContactDamage, pushDirection * _data.ContactKnockback, _data.HitWeight);
+                    Player.GetComponent<IDamageable>()?.TakeDamage(_data.ContactDamage, pushDirection * _data.ContactKnockback, _data.HitWeight);
                     contactMade = true;
                     break;
                 }

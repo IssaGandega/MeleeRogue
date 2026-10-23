@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Inputs;
+using Interfaces;
 using Managers;
 using UnityEngine;
 using Weapons;
@@ -18,7 +19,16 @@ namespace Controller
             Attacking
         }
 
+        public enum EquippedWeapon
+        {
+            Sword,
+            Spear,
+            Hammer
+        }
+
         public PlayerState State{ get; private set; } = PlayerState.Idle;
+
+        public bool IsFacingLeft { get; private set; }
 
         private InputReader _inputReader;
 
@@ -37,7 +47,6 @@ namespace Controller
         [SerializeField] private Weapon currentWeapon;
         [SerializeField] private Transform weaponArm;
 
-        private readonly Cooldown _attackCooldown = new Cooldown(2f);
         private readonly InputBuffer _attackBuffer = new InputBuffer(.15f);
 
         private Coroutine _activeAttackCoroutine;
@@ -55,6 +64,17 @@ namespace Controller
         private Animator _animator;
         private string _currentFacing = "Down";
         private string _currentAnimState;
+        private Vector2 _toAim;
+        public bool armor;
+
+        private Weapon[] weapons;
+        private IInteractible _nearbyInteractible;
+
+        public IInteractible NearbyInteractible
+        {
+            get => _nearbyInteractible;
+            set => _nearbyInteractible = value;
+        }
 
         private void Awake()
         {
@@ -62,6 +82,28 @@ namespace Controller
             _knockback = new KnockbackHandler(knockbackDecay);
             _animator = GetComponentInChildren<Animator>();
             _squashStretch = new SquashStretch(visualTransform, scaleRecoverySpeed);
+            currentWeapon = GetComponentInChildren<Weapon>();
+            weapons = GetComponentsInChildren<Weapon>(true);
+        }
+
+        public void EquipWeapon(EquippedWeapon weapon)
+        {
+            Weapon target = Array.Find(weapons, w => w.Type == weapon);
+            if (target == null)
+            {
+                Debug.LogError($"EquipWeapon: aucune Weapon enfant taguée {weapon}.", this);
+                return;
+            }
+
+            if (currentWeapon)
+            {
+                if (State == PlayerState.Attacking)
+                    CancelAttack();
+                currentWeapon.gameObject.SetActive(false);
+            }
+            target.gameObject.SetActive(true);
+            currentWeapon = target;
+            
         }
 
         public void ApplyKnockback(Vector2 knockback)
@@ -78,12 +120,14 @@ namespace Controller
         {
             _inputReader.DashRequested += OnDashRequested;
             _inputReader.AttackRequested += OnAttackRequested;
+            _inputReader.InteractRequested += OnInteractRequested;
         }
 
         private void OnDisable()
         {
             _inputReader.DashRequested -= OnDashRequested;
             _inputReader.AttackRequested -= OnAttackRequested;
+            _inputReader.InteractRequested -= OnInteractRequested;
         }
 
         private void OnDashRequested()
@@ -94,6 +138,12 @@ namespace Controller
         private void OnAttackRequested()
         {
             _attackBuffer.Request();
+        }
+
+        private void OnInteractRequested()
+        {
+            if (_nearbyInteractible==null) return;
+            _nearbyInteractible.Interact();
         }
 
         private void Update()
@@ -137,14 +187,16 @@ namespace Controller
         {
             if (State == PlayerState.Attacking) return;
 
-            Vector2 toAim = (Vector2)(_inputReader.AimPosition - weaponArm.position);
-            if (toAim.sqrMagnitude < 0.0001f) return; // cursor right on top of the player: no meaningful direction, keep current rotation
+            _toAim = (Vector2)(_inputReader.AimPosition - weaponArm.position);
+            if (_toAim.sqrMagnitude < 0.0001f) return; // cursor right on top of the player: no meaningful direction, keep current rotation
 
-            var angle = Vector2.SignedAngle(Vector2.down, toAim.normalized);
+            IsFacingLeft = _toAim.x < 0f;
+
+
+            var angle = Vector2.SignedAngle(Vector2.down, _toAim.normalized);
             weaponArm.eulerAngles = new Vector3(0,0,Mathf.MoveTowardsAngle(weaponArm.eulerAngles.z, angle, rotationSpeed * Time.deltaTime));
         }
 
-        // Angles use the same convention as Vector2.SignedAngle(Vector2.up, ...): 0 = up, positive = counter-clockwise
         private static readonly (string Name, float Angle)[] FacingDirections =
         {
             ("Up", 0f),
@@ -160,7 +212,7 @@ namespace Controller
             // Freeze facing during attack, matching the weapon aim freeze above
             if (State != PlayerState.Attacking && State != PlayerState.Dashing)
             {
-                _currentFacing = ClosestFacing(_inputReader.MoveDirection);
+                _currentFacing = ClosestFacing(_toAim).Name;
             }
 
             //Add Attack State
@@ -172,26 +224,26 @@ namespace Controller
             _animator.Play(state);
         }
 
-        private static string ClosestFacing(Vector2 direction)
+        private static (string Name, float Angle) ClosestFacing(Vector2 direction)
         {
-            if (direction == Vector2.zero) return "Down"; // no input: default to down
-            if (direction.y == 0f) return direction.x > 0f ? "Down_Right" : "Down_Left"; // no pure left/right sprite: fall back to down
+            if (direction == Vector2.zero) return FacingDirections[3]; // "Down": no input, default to down
+            if (direction.y == 0f) return direction.x > 0f ? FacingDirections[2] : FacingDirections[4]; // no pure left/right sprite: fall back to down
 
             return ClosestFacing(Vector2.SignedAngle(Vector2.up, direction));
         }
 
-        private static string ClosestFacing(float angle)
+        private static (string Name, float Angle) ClosestFacing(float angle)
         {
-            string closest = FacingDirections[0].Name;
+            var closest = FacingDirections[0];
             float smallestDiff = float.MaxValue;
 
-            foreach (var (name, candidate) in FacingDirections)
+            foreach (var candidate in FacingDirections)
             {
-                float diff = Mathf.Abs(Mathf.DeltaAngle(angle, candidate)); // DeltaAngle avoids the 0/360 wraparound
+                float diff = Mathf.Abs(Mathf.DeltaAngle(angle, candidate.Angle)); // DeltaAngle avoids the 0/360 wraparound
                 if (diff < smallestDiff)
                 {
                     smallestDiff = diff;
-                    closest = name;
+                    closest = candidate;
                 }
             }
 
@@ -232,18 +284,23 @@ namespace Controller
 
         private void TryConsumeAttackBuffer()
         {
+            if (!currentWeapon) return;
             if (!_attackBuffer.HasFreshRequest() || State == PlayerState.Attacking || State == PlayerState.Dashing ||
                 !currentWeapon.GetCooldown().IsReady()) return;
 
+            float mirrorSign = AimMirrorSign();
             _activeAttackCoroutine = StartCoroutine(AttackCoroutine());
 
             IEnumerator AttackCoroutine()
             {
                 State = PlayerState.Attacking;
-                yield return currentWeapon.Attack();
+                yield return currentWeapon.Attack(mirrorSign);
                 FinishAttack();
             }
         }
+
+        // > 0 right, < 0 left
+        private float AimMirrorSign() => IsFacingLeft ? -1f : 1f;
 
         private void FinishAttack()
         {

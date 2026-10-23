@@ -24,10 +24,5 @@ namespace Controller
         {
             _lastTrigger = Time.time;
         }
-        
-        // public void SetDuration(float duration)
-        // {
-        //     Duration = duration;
-        // }
     }
 }

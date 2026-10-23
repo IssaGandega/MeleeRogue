@@ -21,12 +21,14 @@ namespace Inputs
             actions.Player.Enable(); // without this, no callback ever fires
             actions.Player.Attack.performed += HandleAttack;
             actions.Player.Dash.performed += HandleDash;
+            actions.Player.Interact.performed += HandleInteract;
         }
 
         private void OnDisable()
         {
             actions.Player.Attack.performed -= HandleAttack;
             actions.Player.Dash.performed -= HandleDash;
+            actions.Player.Interact.performed -= HandleInteract;
             actions.Player.Disable();
         }
 
@@ -44,6 +46,7 @@ namespace Inputs
 
         private void HandleAttack(InputAction.CallbackContext ctx) => RaiseAttackRequested();
         private void HandleDash(InputAction.CallbackContext ctx) => RaiseDashRequested();
+        private  void HandleInteract(InputAction.CallbackContext ctx) => RaiseInteractRequested();
 
         private Vector3 MouseWorldPosition()
         {

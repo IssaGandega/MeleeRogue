@@ -12,14 +12,204 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 968036c168cc471e806a39b8b92b4457, type: 3}
   m_Name: BasicSwordData
   m_EditorClassIdentifier: Assembly-CSharp::Data.Weapons.SwordData
-  attackCooldown: 0.5
-  comboBuffer: 0.15
+  attackCooldown: 0.2
+  comboBuffer: 0.6
   damage: 1
   knockbackForce: 20
   hitWeight: 0.3
-  returnDuration: 0.2
-  startAngle: -45
-  endAngle: 45
-  duration: 0.2
-  lungeDirection: {x: 0, y: 0}
-  lungeDistance: 0.5
+  hyperArmor: 0
+  attackAnims:
+  - duration: 0.2
+    returnDuration: 0.2
+    startAngle: 70
+    endAngle: -70
+    angleCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    moveOffset: {x: -0.6, y: 0}
+    moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.25
+        value: -0.5
+        inSlope: -0.044152293
+        outSlope: -0.044152293
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.23407006
+      - serializedVersion: 3
+        time: 0.75
+        value: 0.5
+        inSlope: 0.00017117096
+        outSlope: 0.00017117096
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.27300215
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    impactTime: 0
+    hitboxWindow: 0
+    shadowScaleCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  - duration: 0.2
+    returnDuration: 0.2
+    startAngle: -70
+    endAngle: 70
+    angleCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    moveOffset: {x: 0.6, y: 0}
+    moveCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 0.25
+        value: -0.5
+        inSlope: -0.044152293
+        outSlope: -0.044152293
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.23407006
+      - serializedVersion: 3
+        time: 0.75
+        value: 0.5
+        inSlope: 0.00017117096
+        outSlope: 0.00017117096
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.27300215
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    impactTime: 0
+    hitboxWindow: 0
+    shadowScaleCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4

@@ -1,3 +1,4 @@
+using System;
 using Controller;
 using Interfaces;
 using Managers;
@@ -38,10 +39,13 @@ namespace Enemies
         private HitFlash _hitFlash;
         private SquashStretch _squashStretch;
         private HitEventChannel _hitEventChannel;
+        private PlayerController _player;
 
         protected HitFlash FlashFx => _hitFlash;
         protected SquashStretch SquashFx => _squashStretch;
         protected SpriteRenderer BodyRenderer => _spriteRenderer;
+
+        protected PlayerController Player => _player;
 
         protected virtual void Awake()
         {
@@ -53,10 +57,20 @@ namespace Enemies
             _hitEventChannel = GameManager.Instance.HitEventChannel;
         }
 
+        private void Start()
+        {
+            _player = GameManager.Instance.Player;
+        }
+
         private void Update()
         {
             Move();
             Attack();
+
+            
+            if (_player != null)
+                BodyRenderer.flipX = _player.transform.position.x < transform.position.x;
+
             transform.position += (Vector3)_knockback.Tick(Time.deltaTime);
             _squashStretch.Tick(Time.deltaTime);
             OnUpdate();
@@ -65,10 +79,7 @@ namespace Enemies
         protected abstract void Move();
         protected abstract void Attack();
 
-        // Hook pour un enfant qui a besoin de sa propre logique par frame (flip, état d'anim, ...).
-        // Ne JAMAIS redéfinir un second "private void Update()" dans une sous-classe : Unity ne garde
-        // qu'une seule méthode Update par type concret, celle du type le plus dérivé -- Update() ici,
-        // dans Enemy (mouvement, attaque, knockback, retour du squash), arrêterait de tourner.
+        
         protected virtual void OnUpdate() { }
 
         public void TakeDamage(int damage, Vector2 knockback, float weight)

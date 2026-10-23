@@ -16,6 +16,7 @@ namespace Inputs
         // Punctual events: the Controller subscribes, decides what to do with the request.
         public event Action DashRequested;
         public event Action AttackRequested;
+        public event Action InteractRequested;
 
         /// <summary>
         /// The only way to write MoveDirection. Guarantees its length is never above 1,
@@ -33,5 +34,6 @@ namespace Inputs
 
         protected void RaiseDashRequested() => DashRequested?.Invoke();
         protected void RaiseAttackRequested() => AttackRequested?.Invoke();
+        protected void RaiseInteractRequested() => InteractRequested?.Invoke();
     }
 }

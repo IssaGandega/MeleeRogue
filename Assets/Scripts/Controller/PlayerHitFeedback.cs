@@ -30,15 +30,27 @@ namespace Controller
             if (_playerController.State == PlayerController.PlayerState.Dashing) return;
 
             var hit = new HitInfo(weight, hitStopDuration, (Vector2)transform.position, this);
+
             _hitEventChannel.Raise(hit);
+            if (_playerController.armor == false)
+            {
+                if (knockback != Vector2.zero)
+                    _playerController.ApplyKnockback(knockback);
 
-            if (knockback != Vector2.zero)
-                _playerController.ApplyKnockback(knockback);
+                _hitFlash.Flash(hitColor, flashDuration);
 
-            _hitFlash.Flash(hitColor, flashDuration);
-
-            if (knockback != Vector2.zero)
-                _playerController.Squash(knockback, squashIntensity);
+                if (knockback != Vector2.zero)
+                    _playerController.Squash(knockback, squashIntensity);
+            }
+            else
+            {
+                if (knockback != Vector2.zero)
+                    _playerController.ApplyKnockback(knockback/10);
+                _hitFlash.Flash(Color.gray3, flashDuration);
+                if (knockback != Vector2.zero)
+                    _playerController.Squash(knockback/10, squashIntensity/10);
+            }
+            
         }
     }
 }
